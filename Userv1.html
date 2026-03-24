@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PictureHub - PLP মার্কেটপ্লেস</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* অরিজিনাল থিম - প্রথম ফাইল থেকে হুবহু */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', 'Hind Siliguri', sans-serif; background: #f0f8f0; color: #1a1a1a; }
+    
+    .auth-page { display: none; position: fixed; inset: 0; background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); align-items: center; justify-content: center; padding: 16px; z-index: 2000; }
+    .auth-page.active { display: flex; }
+    .auth-box { background: white; padding: 40px; border-radius: 8px; width: 100%; max-width: 400px; border: 1px solid #ddd; }
+    .auth-title { font-size: 28px; font-weight: 700; margin-bottom: 30px; color: #4CAF50; text-align: center; }
+    .form-group { margin-bottom: 16px; }
+    .form-label { font-size: 12px; font-weight: 600; margin-bottom: 8px; color: #666; display: block; text-transform: uppercase; }
+    .form-input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; outline: none; }
+    .form-btn { width: 100%; padding: 12px; background: #4CAF50; color: white; border: none; border-radius: 4px; font-weight: 600; cursor: pointer; margin-top: 12px; }
+
+    .main-app { display: none; }
+    .main-app.active { display: block; }
+    .top-nav { background: #4CAF50; padding: 16px 24px; position: sticky; top: 0; z-index: 1000; display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-size: 20px; font-weight: 700; color: white; }
+    
+    .container { max-width: 1400px; margin: 0 auto; padding: 15px; padding-bottom: 100px; }
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* INFINITE BANNER SLIDER - NO REVERSE JUMP */
+    .banner-slider { position: relative; height: 180px; margin-bottom: 30px; overflow: hidden; background: #fff; border: 1px solid #ddd; border-radius: 8px; }
+    .banner-track { display: flex; height: 100%; transition: transform 0.5s ease; }
+    .banner-item { min-width: 100%; height: 100%; cursor: pointer; }
+    .banner-item img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
+
+    .section-title { font-size: 18px; font-weight: 700; color: #4CAF50; margin-bottom: 15px; border-left: 4px solid #4CAF50; padding-left: 10px; }
+
+    /* PRODUCT GRID - 2 COLUMNS SIDE BY SIDE */
+    .products-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .product-card { background: white; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; position: relative; }
+    .product-image { width: 100%; height: 120px; background: #e8f5e9; display: flex; align-items: center; justify-content: center; }
+    .product-image img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
+    .product-info { padding: 10px; }
+    .product-name { font-size: 13px; font-weight: 700; color: #1a1a1a; height: 34px; overflow: hidden; }
+    .product-desc { font-size: 11px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 5px; }
+    .product-price { font-size: 15px; font-weight: 700; color: #4CAF50; margin-bottom: 10px; }
+    .buy-btn { width: 100%; background: #4CAF50; color: white; border: none; padding: 8px; border-radius: 4px; font-weight: 600; cursor: pointer; }
+    .free-badge { position: absolute; top: 5px; right: 5px; background: #FF9800; color: white; font-size: 10px; padding: 2px 6px; border-radius: 3px; font-weight: 700; }
+
+    /* HELP CENTER (SVG LOGOS) */
+    .help-center { position: fixed; bottom: 80px; right: 20px; display: flex; flex-direction: column-reverse; gap: 10px; align-items: center; z-index: 1000; }
+    .help-main-btn { width: 55px; height: 55px; background: #4CAF50; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer; }
+    .help-item { width: 45px; height: 45px; border-radius: 50%; display: none; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: 0.3s; }
+    .help-item.active { display: flex; animation: slideUp 0.3s ease; }
+    .help-item svg { width: 22px; height: 22px; fill: white; }
+    .wa { background: #25D366; } .tg { background: #0088cc; } .fb { background: #1877F2; }
+
+    /* PROFILE & SETTINGS MENU */
+    .profile-card { background: white; border: 1px solid #ddd; padding: 25px; text-align: center; border-radius: 10px; margin-bottom: 20px; }
+    .profile-avatar { width: 80px; height: 80px; background: #4CAF50; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; }
+    .user-id-badge { display: inline-block; background: #e8f5e9; color: #4CAF50; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; margin-top: 10px; }
+    
+    .settings-menu { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 5000; align-items: flex-end; }
+    .settings-content { background: white; width: 100%; border-radius: 20px 20px 0 0; padding: 20px; }
+    .setting-item { padding: 15px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px; font-weight: 600; cursor: pointer; }
+
+    /* PAYMENT MODAL (Your Green Theme) */
+    .payment-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 5000; padding: 16px; }
+    .payment-modal.show { display: flex; }
+    .payment-popup { background: white; width: 100%; max-width: 500px; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; }
+    .pay-header { padding: 24px; color: white; text-align: center; }
+    .pay-header.bkash { background: #e2136e; } .pay-header.nagad { background: #FF6B35; } .pay-header.rocket { background: #7B2CBF; }
+    .copy-box { background: #f9f9f9; padding: 12px; border: 1px dashed #4CAF50; display: flex; justify-content: space-between; margin: 15px 20px; font-weight: 700; }
+    .trx-input { width: calc(100% - 40px); margin: 0 20px 20px; padding: 12px; border: 1px solid #ddd; border-radius: 4px; }
+
+    /* BOTTOM NAV */
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #ddd; display: flex; justify-content: space-around; padding: 10px 0; z-index: 1000; }
+    .nav-btn { background: none; border: none; color: #999; font-size: 11px; font-weight: 600; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+    .nav-btn.active { color: #4CAF50; }
+    .nav-icon { width: 22px; height: 22px; margin-bottom: 4px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    #toast { position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 10px 20px; border-radius: 30px; font-size: 13px; display: none; z-index: 10000; }
+  </style>
+</head>
+<body>
+
+<!-- AUTH SECTION -->
+<div class="auth-page active" id="authPage">
+  <div class="auth-box">
+    <h1 class="auth-title">PLP Hub</h1>
+    <div class="form-group">
+      <label class="form-label">ইউজারনেম</label>
+      <input type="text" id="logUser" class="form-input">
+    </div>
+    <div class="form-group">
+      <label class="form-label">পাসওয়ার্ড</label>
+      <input type="password" id="logPass" class="form-input">
+    </div>
+    <button class="form-btn" onclick="handleAuth()">প্রবেশ করুন</button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="main-app" id="mainApp">
+  <div class="top-nav">
+    <div class="logo">PLP Hub</div>
+    <div onclick="toggleSettings(true)" style="cursor:pointer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- HOME PAGE -->
+    <div id="homePage" class="section active">
+      <div class="banner-slider">
+        <div class="banner-track" id="bannerTrack"></div>
+      </div>
+      <h3 class="section-title"> ডিজাইনগুলো</h3>
+      <div class="products-grid" id="productGrid"></div>
+    </div>
+
+    <!-- PROFILE PAGE -->
+    <div id="profilePage" class="section">
+      <div class="profile-card">
+        <div class="profile-avatar">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="white"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        </div>
+        <h3 id="uNameProf">Username</h3>
+        <div class="user-id-badge" id="uIdProf">ID: PH-0000</div>
+      </div>
+      <h3 class="section-title">আমার কেনাকাটা</h3>
+      <div id="orderList"></div>
+    </div>
+  </div>
+
+  <!-- HELP CENTER (SVG LOGOS) -->
+  <div class="help-center">
+    <div class="help-main-btn" onclick="toggleHelp()">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M12 2c-4.97 0-9 4.03-9 9v7c0 1.66 1.34 3 3 3h3v-8H5v-2c0-3.87 3.13-7 7-7s7 3.13 7 7v2h-4v8h3c1.66 0 3-1.34 3-3v-7c0-4.97-4.03-9-9-9z"/></svg>
+    </div>
+    <a id="waLink" class="help-item wa" target="_blank">
+      <svg viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766 0-3.179-2.587-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217s.231.006.332.009c.109.004.258-.041.405.314.159.386.541 1.321.588 1.417.047.095.078.207.014.332-.064.125-.096.203-.191.314-.095.11-.201.246-.288.331-.097.097-.198.203-.085.397.113.194.503.831 1.079 1.345.743.66 1.369.865 1.563.963.194.098.306.082.42-.049.114-.131.488-.568.619-.762.13-.195.26-.164.439-.098.18.065 1.141.538 1.336.636.195.098.325.144.373.226.048.083.048.479-.096.884z"/></svg>
+    </a>
+    <a id="tgLink" class="help-item tg" target="_blank">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.69-.52.35-1 .53-1.42.52-.47-.01-1.37-.26-2.03-.48-.82-.27-1.47-.42-1.42-.88.03-.24.35-.49.96-.75 3.78-1.65 6.31-2.74 7.58-3.27 3.61-1.51 4.35-1.77 4.84-1.78.11 0 .35.03.5.16.12.1.16.23.18.33.02.11.02.24.01.37z"/></svg>
+    </a>
+    <a id="fbLink" class="help-item fb" target="_blank">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12c0-5.523-4.477-10-10-10z"/></svg>
+    </a>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <button class="nav-btn active" onclick="showPage('homePage', this)">
+      <svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      <div>হোম</div>
+    </button>
+    <button class="nav-btn" onclick="showPage('profilePage', this)">
+      <svg class="nav-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <div>প্রোফাইল</div>
+    </button>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div id="settingsMenu" class="settings-menu" onclick="toggleSettings(false)">
+  <div class="settings-content" onclick="event.stopPropagation()">
+    <div class="setting-item" onclick="toast('প্রোফাইল এডিট এখনো চালু হয়নি')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      প্রোফাইল এডিট
+    </div>
+    <div class="setting-item" style="color:red" onclick="handleLogout()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="red" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+      লগআউট করুন
+    </div>
+    <div class="setting-item" style="border:none; justify-content:center; color:#999" onclick="toggleSettings(false)">বন্ধ করুন</div>
+  </div>
+</div>
+
+<!-- PAYMENT MODAL -->
+<div id="payModal" class="payment-modal">
+  <div class="payment-popup">
+    <div id="payHeader" class="pay-header bkash">
+      <h3 id="payTitle">বিকাশ পেমেন্ট</h3>
+      <h2 id="payAmt">৳ 0</h2>
+    </div>
+    <div id="payMethodButtons" style="padding:15px; display:flex; gap:10px"></div>
+    <div class="copy-box">
+      <span id="targetNum">017XXXXXXXX</span>
+      <span onclick="copyNum()" style="color:#4CAF50; cursor:pointer">কপি</span>
+    </div>
+    <input type="text" id="trxInp" class="trx-input" placeholder="Transaction ID লিখুন">
+    <button class="form-btn" onclick="confirmOrder()" style="margin:0 20px 20px; width:calc(100% - 40px)">অর্ডার করুন</button>
+    <p onclick="closePay()" style="text-align:center; color:#999; margin-bottom:15px; cursor:pointer; font-size:12px">বাতিল</p>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// --- LOCAL DB & DEMO DATA ---
+let products = JSON.parse(localStorage.getItem('ph_products')) || [
+  {id:1, name:'Eid Special PLP 2024', desc:'নতুন ঈদ পোস্টার ডিজাইন প্যাক', price:150, img:'https://via.placeholder.com/400x300?text=Eid+Design', file:'#'},
+  {id:2, name:'Professional Business Card', desc:'মার্কেটপ্লেস স্ট্যান্ডার্ড কার্ড ডিজাইন', price:100, img:'https://via.placeholder.com/400x300?text=Business+PLP', file:'#'},
+  {id:3, name:'YouTube Thumbnail Pack', desc:'ভাইরাল থাম্বনেইল ডিজাইনের সমাহার', price:0, img:'https://via.placeholder.com/400x300?text=Free+Thumbnail', file:'#'},
+  {id:4, name:'Corporate Poster Kit', desc:'অফিসিয়াল পোস্টার ডিজাইন', price:200, img:'https://via.placeholder.com/400x300?text=Poster+PLP', file:'#'}
+];
+
+let banners = JSON.parse(localStorage.getItem('ph_banners')) || [
+  {img:'https://via.placeholder.com/800x300/4CAF50/white?text=Top+Premium+Design', type:'product', val:1},
+  {img:'https://via.placeholder.com/800x300/FF6B35/white?text=Get+50%+Discount', type:'notice', val:'সব ফাইলে আজকের জন্য ছাড়!'},
+  {img:'https://via.placeholder.com/800x300/2196F3/white?text=Join+Telegram+Channel', type:'link', val:'https://t.me/yourid'}
+];
+
+let activeUser = JSON.parse(localStorage.getItem('ph_session')) || null;
+let selectedProd = null;
+let payMethod = 'bkash';
+
+const payInfo = {
+  bkash: {name:'বিকাশ', num:'01700000000', color:'#e2136e'},
+  nagad: {name:'নগদ', num:'01800000000', color:'#FF6B35'},
+  rocket: {name:'রকেট', num:'01900000000', color:'#7B2CBF'}
+};
+
+// --- AUTH ---
+function handleAuth() {
+  const u = document.getElementById('logUser').value.trim();
+  const p = document.getElementById('logPass').value;
+  if(!u || !p) return toast("সব তথ্য দিন");
+  
+  let users = JSON.parse(localStorage.getItem('ph_users')) || [];
+  let user = users.find(x => x.username === u);
+  
+  if(!user) {
+    user = { username:u, password:p, uid:'PH-'+Math.floor(1000+Math.random()*9000) };
+    users.push(user);
+    localStorage.setItem('ph_users', JSON.stringify(users));
+  } else if(user.password !== p) return toast("ভুল পাসওয়ার্ড");
+  
+  activeUser = user;
+  localStorage.setItem('ph_session', JSON.stringify(user));
+  loginUI();
+}
+
+function loginUI() {
+  document.getElementById('authPage').classList.remove('active');
+  document.getElementById('mainApp').classList.add('active');
+  document.getElementById('uNameProf').innerText = activeUser.username;
+  document.getElementById('uIdProf').innerText = 'ID: ' + activeUser.uid;
+  renderHome();
+  renderHelpLinks();
+}
+
+function handleLogout() {
+  localStorage.removeItem('ph_session');
+  location.reload();
+}
+
+// --- RENDERING ---
+function renderHome() {
+  // Infinite Slider
+  const track = document.getElementById('bannerTrack');
+  if(banners.length > 0) {
+    let html = banners.map(b => `<div class="banner-item" onclick='handleBanner(${JSON.stringify(b)})'><img src="${b.img}"></div>`).join('');
+    html += `<div class="banner-item"><img src="${banners[0].img}"></div>`; // Clone
+    track.innerHTML = html;
+    startSlider();
+  }
+
+  // Products
+  const grid = document.getElementById('productGrid');
+  grid.innerHTML = products.map(p => `
+    <div class="product-card">
+      ${p.price == 0 ? '<span class="free-badge">FREE</span>' : ''}
+      <div class="product-image"><img src="${p.img}"></div>
+      <div class="product-info">
+        <div class="product-name">${p.name}</div>
+        <div class="product-desc">${p.desc}</div>
+        <div class="product-price">${p.price == 0 ? 'ফ্রি' : '৳ '+p.price}</div>
+        <button class="buy-btn" onclick="openBuy(${p.id})">${p.price == 0 ? 'ডাউনলোড' : 'কিনুন'}</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function startSlider() {
+  const track = document.getElementById('bannerTrack');
+  let idx = 0;
+  setInterval(() => {
+    idx++;
+    track.style.transition = "transform 0.5s ease";
+    track.style.transform = `translateX(-${idx * 100}%)`;
+    if(idx === banners.length) {
+      setTimeout(() => {
+        track.style.transition = "none";
+        idx = 0;
+        track.style.transform = "translateX(0)";
+      }, 500);
+    }
+  }, 4000);
+}
+
+function handleBanner(b) {
+  if(b.type === 'product') openBuy(b.val);
+  else if(b.type === 'link') window.open(b.val);
+  else alert("নোটিশ: " + b.val);
+}
+
+// --- PROCESSES ---
+function openBuy(pid) {
+  selectedProd = products.find(x => x.id == pid);
+  if(selectedProd.price == 0) {
+    saveOrder(true);
+  } else {
+    document.getElementById('payAmt').innerText = '৳ ' + selectedProd.price;
+    renderPaymentMethods();
+    switchPay('bkash');
+    document.getElementById('payModal').style.display = 'flex';
+  }
+}
+
+function confirmOrder() {
+  const trx = document.getElementById('trxInp').value.trim();
+  if(trx.length < 6) return toast("সঠিক TrxID দিন");
+  saveOrder(false, trx);
+  closePay();
+}
+
+function saveOrder(isFree, trx='') {
+  let orders = JSON.parse(localStorage.getItem('ph_orders')) || [];
+  orders.push({
+    id: Date.now(), uid:activeUser.uid, pId:selectedProd.id, 
+    pName:selectedProd.name, pPrice:selectedProd.price, trx:trx, 
+    status: isFree ? 'approved' : 'pending', file:selectedProd.file
+  });
+  localStorage.setItem('ph_orders', JSON.stringify(orders));
+  toast(isFree ? "ফাইল প্রোফাইলে যোগ হয়েছে!" : "অর্ডার সফল! পেন্ডিং আছে।");
+  if(isFree) showPage('profilePage', document.getElementById('navProf'));
+}
+
+function renderOrders() {
+  let all = JSON.parse(localStorage.getItem('ph_orders')) || [];
+  const my = all.filter(o => o.uid === activeUser.uid);
+  const container = document.getElementById('orderList');
+  if(my.length === 0) return container.innerHTML = '<p style="text-align:center; padding:20px; color:#999">কোনো অর্ডার নেই</p>';
+  
+  container.innerHTML = my.reverse().map(o => `
+    <div style="background:white; border:1px solid #ddd; padding:12px; border-radius:8px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <div style="font-weight:700; font-size:13px">${o.pName}</div>
+        <div style="font-size:11px; color:${o.status==='approved'?'green':o.status==='cancelled'?'red':'#f39c12'}">
+          ● ${o.status === 'approved' ? 'সফল হয়েছে' : o.status === 'cancelled' ? 'বাতিল হয়েছে' : 'পেন্ডিং আছে'}
+        </div>
+      </div>
+      <div>
+        ${o.status === 'approved' ? `<button onclick="window.open('${o.file}')" style="background:#4CAF50; color:white; border:none; padding:6px 12px; border-radius:4px; font-size:11px; cursor:pointer">ডাউনলোড</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+// --- UTILS ---
+function toggleHelp() { document.querySelectorAll('.help-item').forEach(i => i.classList.toggle('active')); }
+function toggleSettings(s) { document.getElementById('settingsMenu').style.display = s ? 'flex' : 'none'; }
+function switchPay(m) {
+  payMethod = m;
+  let freshGateways = JSON.parse(localStorage.getItem('ph_gateways'));
+  if(freshGateways && freshGateways[m]) {
+    payInfo[m] = freshGateways[m];
+  }
+  const c = payInfo[m];
+  document.getElementById('payHeader').className = 'pay-header ' + m;
+  document.getElementById('payTitle').innerText = (c && c.name ? c.name : m) + ' পেমেন্ট';
+  document.getElementById('targetNum').innerText = (c && c.num ? c.num : 'সংখ্যা লোড হচ্ছে...');
+}
+
+function renderPaymentMethods() {
+  let gateways = JSON.parse(localStorage.getItem('ph_gateways')) || payInfo;
+  let html = '';
+  for(let key in gateways) {
+    const logo = gateways[key].logo || payInfo[key].logo;
+    html += `<button onclick="switchPay('${key}')" style="flex:1; padding:12px; border:2px solid #ddd; border-radius:8px; display:flex; flex-direction:column; align-items:center; gap:8px; background:white; cursor:pointer; transition:0.2s">
+      <img src="${logo}" style="height:45px">
+    </button>`;
+  }
+  document.getElementById('payMethodButtons').innerHTML = html;
+}
+function showPage(id, btn) {
+  document.querySelectorAll('.section').forEach(p => p.style.display = 'none');
+  document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
+  document.getElementById(id).style.display = 'block';
+  btn.classList.add('active');
+  if(id === 'profilePage') renderOrders();
+}
+function renderHelpLinks() {
+  const s = JSON.parse(localStorage.getItem('ph_settings')) || {wa:'#', tg:'#', fb:'#'};
+  document.getElementById('waLink').href = s.wa;
+  document.getElementById('tgLink').href = s.tg;
+  document.getElementById('fbLink').href = s.fb;
+}
+function toast(m) { const t = document.getElementById('toast'); t.innerText = m; t.style.display = 'block'; setTimeout(()=> t.style.display='none', 3000); }
+function closePay() { document.getElementById('payModal').style.display = 'none'; document.getElementById('trxInp').value=''; }
+function copyNum() { navigator.clipboard.writeText(document.getElementById('targetNum').innerText); toast("কপি হয়েছে"); }
+
+window.onload = () => { if(activeUser) loginUI(); };
+</script>
+</body>
+</html>
